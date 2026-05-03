@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 
-interface Params { params: { id: string } }
+type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -17,10 +18,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { action, role } = await req.json();
 
   if (action === "toggle_active") {
-    const target = await prisma.user.findUnique({ where: { id: params.id } });
+    const target = await prisma.user.findUnique({ where: { id } });
     if (!target) return NextResponse.json({ error: "Utilisateur introuvable" }, { status: 404 });
     const updated = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { isActive: !target.isActive },
     });
     return NextResponse.json({ user: updated });
@@ -28,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (action === "set_role" && role) {
     const updated = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: { role: role as "SEEKER" | "EMPLOYER" | "ADMIN" },
     });
     return NextResponse.json({ user: updated });

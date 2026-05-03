@@ -32,7 +32,7 @@ import {
 import { JobCard } from "@/components/jobs/job-card";
 
 interface JobDetailPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 async function getJob(slug: string) {
@@ -61,7 +61,8 @@ async function getSimilarJobs(job: NonNullable<Awaited<ReturnType<typeof getJob>
 }
 
 export async function generateMetadata({ params }: JobDetailPageProps): Promise<Metadata> {
-  const job = await getJob(params.slug);
+  const { slug } = await params;
+  const job = await getJob(slug);
   if (!job) return { title: "Offre introuvable" };
   return {
     title: `${job.title} – ${job.company.name}`,
@@ -74,7 +75,8 @@ export async function generateMetadata({ params }: JobDetailPageProps): Promise<
 }
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
-  const job = await getJob(params.slug);
+  const { slug } = await params;
+  const job = await getJob(slug);
   if (!job) notFound();
 
   const similarJobs = await getSimilarJobs(job);

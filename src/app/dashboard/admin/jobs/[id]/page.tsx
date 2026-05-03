@@ -10,12 +10,13 @@ import { CONTRACT_LABELS, WORK_MODE_LABELS, formatDate, formatSalary } from "@/l
 import { AdminJobActions } from "@/components/dashboard/admin-job-actions";
 
 interface AdminJobDetailPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function AdminJobDetailPage({ params }: AdminJobDetailPageProps) {
+  const { id } = await params;
   const job = await prisma.job.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { company: true },
   });
   if (!job) notFound();

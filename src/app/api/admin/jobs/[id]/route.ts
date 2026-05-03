@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 
-interface Params { params: { id: string } }
+type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -17,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const { action } = await req.json();
 
   if (action === "delete") {
-    await prisma.job.delete({ where: { id: params.id } });
+    await prisma.job.delete({ where: { id } });
     return NextResponse.json({ success: true });
   }
 
@@ -32,20 +33,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const job = await prisma.job.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       status: newStatus,
       publishedAt: newStatus === "PUBLISHED" ? new Date() : undefined,
     },
   });
 
-  // Log action
   await prisma.adminLog.create({
     data: {
       adminId: dbUser.id,
       action: `job_${action}`,
       entity: "Job",
-      entityId: params.id,
+      entityId: id,
       details: `Job ${action}ed: ${job.title}`,
     },
   });

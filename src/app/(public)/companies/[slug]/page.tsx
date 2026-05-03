@@ -10,7 +10,7 @@ import { JobCard } from "@/components/jobs/job-card";
 import { MapPin, Globe, Users, Star, Briefcase, ArrowLeft } from "lucide-react";
 
 interface CompanyPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 async function getCompany(slug: string) {
@@ -29,7 +29,8 @@ async function getCompany(slug: string) {
 }
 
 export async function generateMetadata({ params }: CompanyPageProps): Promise<Metadata> {
-  const company = await getCompany(params.slug);
+  const { slug } = await params;
+  const company = await getCompany(slug);
   if (!company) return { title: "Entreprise introuvable" };
   return {
     title: `${company.name} – Offres d'emploi`,
@@ -38,7 +39,8 @@ export async function generateMetadata({ params }: CompanyPageProps): Promise<Me
 }
 
 export default async function CompanyPage({ params }: CompanyPageProps) {
-  const company = await getCompany(params.slug);
+  const { slug } = await params;
+  const company = await getCompany(slug);
   if (!company) notFound();
 
   return (

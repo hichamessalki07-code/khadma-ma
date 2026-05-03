@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { jobSchema } from "@/lib/validations";
 
-interface Params { params: { id: string } }
+type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const job = await prisma.job.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { company: true },
   });
   if (!job) return NextResponse.json({ error: "Offre introuvable" }, { status: 404 });
@@ -15,6 +16,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 }
 
 export async function PUT(req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -22,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
   const company = dbUser ? await prisma.company.findUnique({ where: { userId: dbUser.id } }) : null;
 
-  const job = await prisma.job.findUnique({ where: { id: params.id } });
+  const job = await prisma.job.findUnique({ where: { id } });
   if (!job || job.companyId !== company?.id) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
@@ -34,7 +36,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
   }
 
   const updated = await prisma.job.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       title: parsed.data.title,
       description: parsed.data.description,
@@ -55,6 +57,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
+  const { id } = await params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -62,11 +65,11 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   const dbUser = await prisma.user.findUnique({ where: { email: user.email } });
   const company = dbUser ? await prisma.company.findUnique({ where: { userId: dbUser.id } }) : null;
 
-  const job = await prisma.job.findUnique({ where: { id: params.id } });
+  const job = await prisma.job.findUnique({ where: { id } });
   if (!job || (job.companyId !== company?.id && dbUser?.role !== "ADMIN")) {
     return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
   }
 
-  await prisma.job.delete({ where: { id: params.id } });
+  await prisma.job.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }
