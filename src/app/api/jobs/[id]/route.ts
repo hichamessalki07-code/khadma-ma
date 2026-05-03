@@ -3,10 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { jobSchema } from "@/lib/validations";
 
-type Params = { params: Promise<{ id: string }> };
-
-export async function GET(_req: NextRequest, { params }: Params) {
-  const { id } = await params;
+export async function GET(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const job = await prisma.job.findUnique({
     where: { id },
     include: { company: true },
@@ -15,8 +13,8 @@ export async function GET(_req: NextRequest, { params }: Params) {
   return NextResponse.json({ job });
 }
 
-export async function PUT(req: NextRequest, { params }: Params) {
-  const { id } = await params;
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
@@ -56,8 +54,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
   return NextResponse.json({ job: updated });
 }
 
-export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = await params;
+export async function DELETE(_req: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
