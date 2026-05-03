@@ -16,7 +16,7 @@ import { Upload, FileText, User, Briefcase, GraduationCap, Loader2 } from "lucid
 export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
-  const [profile, setProfile] = useState<ProfileInput | null>(null);
+  const [profile, setProfile] = useState<(ProfileInput & { cvUrl?: string }) | null>(null);
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileInput>({
