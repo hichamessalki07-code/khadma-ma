@@ -33,6 +33,7 @@ export const profileSchema = z.object({
   expectedSalary: z.coerce.number().optional(),
   experienceYears: z.coerce.number().optional(),
   isOpenToWork: z.boolean().default(true),
+  cvUrl: z.string().optional(),
 });
 
 export const jobSchema = z.object({

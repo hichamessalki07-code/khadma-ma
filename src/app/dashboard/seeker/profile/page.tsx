@@ -13,12 +13,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { profileSchema, type ProfileInput } from "@/lib/validations";
 import { Upload, FileText, User, Briefcase, GraduationCap, Loader2 } from "lucide-react";
 
-type ProfileData = ProfileInput & { cvUrl?: string };
-
 export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [cvFile, setCvFile] = useState<File | null>(null);
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [profile, setProfile] = useState<ProfileInput | null>(null);
   const { toast } = useToast();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileInput>({
